@@ -9,6 +9,7 @@ The following syntactically well-formed answers show the efficacy of CHIME.
 - *yes, it can be operated by battery, but it is not recommended to use this chair with batteries only*
 
 ## Dependency
+```
 python 3.7.7
 apex 0.1
 bert-score 0.3.4
@@ -18,6 +19,7 @@ rouge 1.0.0
 torch 1.4.0
 torchtext 0.5.0
 transformers 2.8.0
+```
 
 ## Data
 - AmazonQA
