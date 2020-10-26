@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
                 total_loss += lm_losses.item()
                 log_interval = len(running_data.train.examples) // (10 * bsz)
-                if i % log_interval == 0:
+                if i % log_interval == 0 and i > 0:
                     cur_loss_lm = total_loss / log_interval  # average loss on each sample
                     elapsed = time.time() - start_time
                     logger.info('| epoch {:3d} | {:5d}/{:5d} batches | lr {:02.8f} | ms/batch {:5.2f} | '
@@ -173,13 +173,13 @@ if __name__ == "__main__":
             if val_loss_lm < best_val_loss:
                 best_val_loss = val_loss_lm
                 best_model = model
-                savepath = configs['model_output_path'] + "/%s_%s.pth" % (configs['task_name'], str(epoch))
+                savepath = configs['model_output_path'] + "%s_%s.pth" % (configs['task_name'], str(epoch))
                 torch.save(best_model.state_dict(), savepath)
                 logger.info("model of epoch %s saved" % epoch)
     elif task == "Test":
         logger.info("Testing...")
         for epoch in range(1, epochs + 1):
-            loadpath = configs['model_output_path'] + "/%s_%s.pth" % (configs['task_name'], str(epoch))
+            loadpath = configs['model_output_path'] + "%s_%s.pth" % (configs['task_name'], str(epoch))
             state_dict = torch.load(loadpath, map_location=torch.device("cpu"))
             if fp16:
                 model = amp.initialize(model, opt_level=fp16)
@@ -191,7 +191,7 @@ if __name__ == "__main__":
         logger.info("Predicting...")
         for epoch in range(1, epochs + 1):
             records = []
-            loadpath = configs['model_output_path'] + "/%s_%s.pth" % (configs['task_name'], str(epoch))
+            loadpath = configs['model_output_path'] + "%s_%s.pth" % (configs['task_name'], str(epoch))
             state_dict = torch.load(loadpath, map_location=torch.device("cpu"))
             if fp16:
                 model = amp.initialize(model, opt_level=fp16)
@@ -209,12 +209,12 @@ if __name__ == "__main__":
                             "answers": references,
                             "prediction": tokenizer.decode(prediction_beam[0], skip_special_tokens=True)}
                 records.append(record_p)
-            prediction_path = configs['prediction_output_path'] + "/%s_%s.json" % (configs['task_name'], str(epoch))
+            prediction_path = configs['prediction_output_path'] + "%s_%s.json" % (configs['task_name'], str(epoch))
             json.dump(records, open(prediction_path, "w"))
             logger.info("epoch %s prediction done" % epoch)
     elif task == "Analyze":
         logger.info("Analyzing...")
-        loadpath = configs['model_output_path'] + "/%s_%s.pth" % (configs['task_name'], str(epochs))
+        loadpath = configs['model_output_path'] + "%s_%s.pth" % (configs['task_name'], str(epochs))
         state_dict = torch.load(loadpath, map_location=torch.device("cpu"))
         if fp16:
             model = amp.initialize(model, opt_level=fp16)
@@ -243,7 +243,7 @@ if __name__ == "__main__":
         scorer = BleurtScorer("bleurt-base-128")
         weights = [(1, 0, 0, 0), (0.5, 0.5, 0, 0), (1 / 3, 1 / 3, 1 / 3, 0), (0.25, 0.25, 0.25, 0.25)]
 
-        output_path = configs['evaluation_output_path'] + "/%s.txt" % configs['task_name']
+        output_path = configs['evaluation_output_path'] + "%s.txt" % configs['task_name']
         w = open(output_path, "w")
         for epoch in range(1, configs['epochs'] + 1):
             w.write("Epoch " + str(epoch) + "\n")
@@ -252,7 +252,7 @@ if __name__ == "__main__":
             bert_score = [0.0] * 1
             bleurt_score = [0.0] * 1
             count = 0
-            prediction_path = configs['prediction_output_path'] + "/%s_%s.json" % (configs['task_name'], str(epoch))
+            prediction_path = configs['prediction_output_path'] + "%s_%s.json" % (configs['task_name'], str(epoch))
             records = open(prediction_path, "r").readlines()[0]
             single_cands = []
             multi_refs = []
