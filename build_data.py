@@ -49,7 +49,7 @@ def DataSelection(input_file, output_file):
             w.write(json.dumps(line_dict) + "\n")
             w_c += 1
     w.close()
-    print("%s takes %s percent of %s" % (output_file, round(w_c / r_c, 4) * 100, input_file))
+    print("%s takes %s percent of %s" % (output_file, round(w_c / r_c, 2) * 100, input_file))
 
 
 def preprocessor(input_data, refer_len, pre_tokenizer, pre_pad_index):

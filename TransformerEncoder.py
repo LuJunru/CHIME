@@ -23,7 +23,6 @@ class PositionalWiseFeedForward(nn.Module):
 
 class ScaledDotProductAttention(nn.Module):
     """Scaled dot-product attention mechanism."""
-
     def __init__(self, attention_dropout=0.0):
         super(ScaledDotProductAttention, self).__init__()
         self.dropout = nn.Dropout(attention_dropout)

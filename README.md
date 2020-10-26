@@ -2,7 +2,10 @@
 This repository contains PyTorch implementation of the [corresponding COLING 2020 Paper](https://waitforadding.com).
 
 ## Breif Introduction
-CHIME is a cross-passage hierarchical memory network for generative question answering (QA). It extends [XLNet](https://github.com/zihangdai/xlnet) introducing an auxiliary memory module consisting of two components: the **context memory** collecting cross-passage evidences, and the **answer memory** working as a buffer continually refining the generated answers. 
+CHIME is a cross-passage hierarchical memory network for generative question answering (QA). It extends
+[XLNet](https://github.com/zihangdai/xlnet) introducing an auxiliary memory module consisting of two components:
+the **context memory** collecting cross-passage evidences, and the **answer memory** working as a buffer continually
+refining the generated answers.
 
 The following syntactically well-formed answers show the efficacy of CHIME.
 - *Question1: can this chair be operated with battery only?*
@@ -25,12 +28,12 @@ transformers 2.8.0
 - AmazonQA
 
 ## Running
-Change task type for model training, testing, predicting and analyzing. In particular, analyzing refers to reveal model's
-interoperability by listing intermediate answers
+Change task type for model training, testing, predicting, analyzing and evaluating. In particular, analyzing refers to
+reveal model's interoperability by listing intermediate answers
 ```
 python3 run_chime.py --devices 0,1 --model xlnet-base-cased --root_path YourDataPath --data_size 1.0 --epochs 5
 --batch_size_perGPU 1 --model_output_path YourModelPath --prediction_output_path YourPredictionPath
---evaluation_output_path YourEvaluationPath --task Train --rev_num 10 --ans_num 1
+--evaluation_output_path YourEvaluationPath --rev_num 10 --ans_num 1 --task Train
 ```
 
 ## Licence

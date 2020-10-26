@@ -4,7 +4,6 @@ from TransformerEncoder import Encoder
 
 
 class CHIME_Model(nn.Module):
-
     def __init__(self, pretrained_encoder, config, cls_index, sep_index, pad_index, msk_index, seed):
         super(CHIME_Model, self).__init__()
 

@@ -25,7 +25,7 @@ def setup_args():
                         help='output path of evaluations')
     parser.add_argument('--seed', type=int, default=123, help='random seed')
     parser.add_argument('--task', type=str, default=None, required=True, help="task type",
-                        choices=('Train', 'Test', 'Predict', 'Analysis'))
+                        choices=('Train', 'Test', 'Predict', 'Analyze', 'Evaluate'))
     parser.add_argument('--beam_size', default=3, type=int, required=False, help='beam size for text generation')
     parser.add_argument('--question_length', default=40, type=int, required=False, help='fix length for questions')
     parser.add_argument('--single_review_length', default=124, type=int, required=False, help='fix length for reviews')

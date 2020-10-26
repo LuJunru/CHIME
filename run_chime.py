@@ -20,7 +20,7 @@ def evaluate(eval_model, data_source, eval_batch_size):
     with torch.no_grad():
         for i, batch in enumerate(get_batch(data_source, eval_batch_size)):
             lm_losses, _ = eval_model(batch)
-            if multi_gpu:
+            if multi_gpu and len(lm_losses.shape) > 0:
                 lm_losses = sum([lm_loss.mean() for lm_loss in lm_losses])
             total_loss += batch[0].size(0) * lm_losses.item()
     return total_loss / len(data_source)
@@ -173,12 +173,13 @@ if __name__ == "__main__":
             if val_loss_lm < best_val_loss:
                 best_val_loss = val_loss_lm
                 best_model = model
-                savepath = configs['model_output_path'] + "%s_%s.pth" % (configs['task_name'], str(epoch))
+                savepath = configs['model_output_path'] + "/%s_%s.pth" % (configs['task_name'], str(epoch))
                 torch.save(best_model.state_dict(), savepath)
                 logger.info("model of epoch %s saved" % epoch)
     elif task == "Test":
+        logger.info("Testing...")
         for epoch in range(1, epochs + 1):
-            loadpath = configs['model_output_path'] + "%s_%s.pth" % (configs['task_name'], str(epoch))
+            loadpath = configs['model_output_path'] + "/%s_%s.pth" % (configs['task_name'], str(epoch))
             state_dict = torch.load(loadpath, map_location=torch.device("cpu"))
             if fp16:
                 model = amp.initialize(model, opt_level=fp16)
@@ -187,33 +188,33 @@ if __name__ == "__main__":
             test_loss_lm = evaluate(model, running_data.test.examples, batch_size)
             logger.info('Epoch %s, Test loss %.5s' % (epoch, test_loss_lm))
     elif task == "Predict":
+        logger.info("Predicting...")
         for epoch in range(1, epochs + 1):
             records = []
-            loadpath = configs['model_output_path'] + "%s_%s.pth" % (configs['task_name'], str(epoch))
+            loadpath = configs['model_output_path'] + "/%s_%s.pth" % (configs['task_name'], str(epoch))
             state_dict = torch.load(loadpath, map_location=torch.device("cpu"))
             if fp16:
                 model = amp.initialize(model, opt_level=fp16)
                 state_dict = {k[7:]: v for k, v in state_dict.items()}
             model.load_state_dict(state_dict)
-            for i, batch in enumerate(get_batch(running_data.test.examples, batch_size)):
+            for i, batch in enumerate(get_batch(running_data.test.examples, 1)):
                 ans = batch[2]  # (N, A, TA)
                 prediction_beam = predict(model, batch, configs['single_answer_length'], configs['sep_index'],
                                           beam_size=configs['beam_size'])
-                for k in range(len(prediction_beam)):
-                    references = []
-                    for j in range(ans.size(1)):
-                        reference = tokenizer.decode(ans[k, j, :], skip_special_tokens=True)
-                        references.append(reference)
-                    record_p = {"batch": str(i + 1), "case": str(k + 1),
-                                "question": tokenizer.decode(batch[0][k, :], skip_special_tokens=True),
-                                "answers": references,
-                                "prediction": tokenizer.decode(prediction_beam[k], skip_special_tokens=True)}
-                    records.append(record_p)
-            prediction_path = configs['prediction_output_path'] + "%s_%s.json" % (configs['task_name'], str(epoch))
+                references = []
+                for t_answer in running_data.test.examples[i].answerText:
+                    reference = tokenizer.decode(t_answer, skip_special_tokens=True)
+                    references.append(reference)
+                record_p = {"question": tokenizer.decode(batch[0][0, :], skip_special_tokens=True),
+                            "answers": references,
+                            "prediction": tokenizer.decode(prediction_beam[0], skip_special_tokens=True)}
+                records.append(record_p)
+            prediction_path = configs['prediction_output_path'] + "/%s_%s.json" % (configs['task_name'], str(epoch))
             json.dump(records, open(prediction_path, "w"))
             logger.info("epoch %s prediction done" % epoch)
-    elif task == "Analysis":
-        loadpath = configs['model_output_path'] + "%s_%s.pth" % (configs['task_name'], str(epochs))
+    elif task == "Analyze":
+        logger.info("Analyzing...")
+        loadpath = configs['model_output_path'] + "/%s_%s.pth" % (configs['task_name'], str(epochs))
         state_dict = torch.load(loadpath, map_location=torch.device("cpu"))
         if fp16:
             model = amp.initialize(model, opt_level=fp16)
@@ -223,9 +224,72 @@ if __name__ == "__main__":
         ans = batch[2]
         rev = batch[1]
         que = batch[0]
-        for i in range(10, 11):
+        print("Question: %s" % tokenizer.decode(que[0, :], skip_special_tokens=True))
+        print("Ground Truth: %s" % tokenizer.decode(ans[0, 0, :], skip_special_tokens=True))
+        for i in range(1, 11):
             prediction_beam = predict(model, (que, rev[:, :i, :], ans), configs['single_answer_length'],
                                       configs['sep_index'], beam_size=configs['beam_size'])
-            logger.info("After reading %s passages: %s" % (i, tokenizer.decode(prediction_beam[0], skip_special_tokens=True)))
+            print("After reading %s passages: %s" % (i, tokenizer.decode(prediction_beam[0], skip_special_tokens=True)))
+    elif task == "Evaluate":
+        logger.info("Evaluating...")
+        from rouge import Rouge
+        from bleurt.score import BleurtScorer
+        from bert_score import score
+        from nltk.translate.bleu_score import sentence_bleu
+        from nltk.translate.bleu_score import SmoothingFunction
+
+        cc = SmoothingFunction()
+        rouge = Rouge()
+        scorer = BleurtScorer("bleurt-base-128")
+        weights = [(1, 0, 0, 0), (0.5, 0.5, 0, 0), (1 / 3, 1 / 3, 1 / 3, 0), (0.25, 0.25, 0.25, 0.25)]
+
+        output_path = configs['evaluation_output_path'] + "/%s.txt" % configs['task_name']
+        w = open(output_path, "w")
+        for epoch in range(1, configs['epochs'] + 1):
+            w.write("Epoch " + str(epoch) + "\n")
+            bleus = [0.0] * 4
+            rouge_l = [0.0] * 1
+            bert_score = [0.0] * 1
+            bleurt_score = [0.0] * 1
+            count = 0
+            prediction_path = configs['prediction_output_path'] + "/%s_%s.json" % (configs['task_name'], str(epoch))
+            records = open(prediction_path, "r").readlines()[0]
+            single_cands = []
+            multi_refs = []
+            for r_i, record in enumerate(json.loads(records)):
+                w.write("Question: " + record["question"] + "\n")
+                answers = []
+                for i, answer in enumerate(record["answers"]):
+                    answers.append(answer.lower())
+                    w.write("Reference Answer " + str(i + 1) + ": " + answer + "\n")
+                w.write("Predicted Answer: " + record["prediction"] + "\n")
+                w.write("=" * 20 + "\n")
+                w.write("=" * 20 + "\n")
+
+                rouges_score_i = rouge.get_scores([record["prediction"].lower()] * len(answers), answers)
+                bleurt_score_i = scorer.score(answers, [record["prediction"].lower()] * len(answers))
+                bleus_i = [sentence_bleu([answer.split(" ") for answer in answers],
+                                         record["prediction"].lower().split(" "), weights=weight, auto_reweigh=True,
+                                         smoothing_function=cc.method3) * 100 for weight in weights]
+                rouges_score_i = max([rouges_score_ia["rouge-l"]["f"] for rouges_score_ia in rouges_score_i])
+                rouge_l[0] += rouges_score_i * 100
+                bleurt_score_i = max(bleurt_score_i)
+                bleurt_score[0] += bleurt_score_i
+                bleus = [bleu + bleus_i[j] for j, bleu in enumerate(bleus)]
+                count += 1
+
+                single_cands.append(record["prediction"].lower())
+                multi_refs.append(answers)
+
+            bert_score[0] += score(single_cands, multi_refs, lang="en", rescale_with_baseline=True)[2].mean().item()
+            w.write("Beam Search Bleu-1: " + str(round(bleus[0] / count, 3)) + "\n")
+            w.write("Beam Search Bleu-2: " + str(round(bleus[1] / count, 3)) + "\n")
+            w.write("Beam Search Bleu-3: " + str(round(bleus[2] / count, 3)) + "\n")
+            w.write("Beam Search Bleu-4: " + str(round(bleus[3] / count, 3)) + "\n")
+            w.write("Beam Search Rouge-L: " + str(round(rouge_l[0] / count, 3)) + "\n")
+            w.write("Beam Search BertScore: " + str(round(bert_score[0], 3)) + "\n")
+            w.write("Beam Search BLEURT: " + str(round(bleurt_score[0] / count, 3)) + "\n")
+            print("Epoch %s done" % str(epoch))
+        w.close()
     else:
         logger.info("Wrong task type")
