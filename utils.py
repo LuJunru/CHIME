@@ -38,7 +38,7 @@ def get_batch(data_source, batch_size):
         for batch_j in batch:
             que.append(batch_j.q_word)
 
-            rev_org = batch_j.reviews[:rev_num]
+            rev_org = batch_j.reviews[::-1][:rev_num]
             rev.append(rev_org)
 
             ans_h_org = []

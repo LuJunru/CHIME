@@ -82,8 +82,8 @@ def a_preprocessor(input_data):
 
 class AmazonQA():
     def __init__(self):
-        path = root_path + 'amazonqa'
-        dataset_path = path + '/torchtext_' + pretrained_weights + '/'
+        path = root_path
+        dataset_path = path + 'torchtext_' + pretrained_weights + '/'
         train_examples_path = dataset_path + 'train_examples.pt'
         dev_examples_path = dataset_path + 'val_examples.pt'
         test_examples_path = dataset_path + 'test_examples.pt'
