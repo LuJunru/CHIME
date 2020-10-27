@@ -5,11 +5,7 @@ This repository contains PyTorch implementation of the [corresponding COLING 202
 CHIME is a cross-passage hierarchical memory network for generative question answering (QA). It extends
 [XLNet](https://github.com/zihangdai/xlnet) introducing an auxiliary memory module consisting of two components:
 the **context memory** collecting cross-passage evidences, and the **answer memory** working as a buffer continually
-refining the generated answers.
-
-The following syntactically well-formed answers show the efficacy of CHIME.
-- *Question1: can this chair be operated with battery only?*
-- *yes, it can be operated by battery, but it is not recommended to use this chair with batteries only*
+refining the generated answers. A sample of syntactically well-formed [answers](https://github.com/LuJunru/CHIME/blob/main/evaluation_output/evaluation_samples.txt) show the efficacy of CHIME.
 
 ## Dependency
 ```
@@ -25,7 +21,8 @@ transformers 2.8.0
 ```
 
 ## Data
-- AmazonQA
+- AmazonQA: Raw data can be downloaded from [AmazonQA Project](https://github.com/amazonqa/amazonqa)
+- Details of building experimental subsets are included in [build_data.py](https://github.com/LuJunru/CHIME/blob/main/build_data.py). The subsets we used are uploaded [here](https://waitforadding.com) 
 
 ## Running
 Change task type for model training, testing, predicting, analyzing and evaluating. In particular, analyzing refers to
