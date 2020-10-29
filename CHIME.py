@@ -7,14 +7,21 @@ class CHIME_Model(nn.Module):
     def __init__(self, pretrained_encoder, config, cls_index, sep_index, pad_index, msk_index, seed):
         super(CHIME_Model, self).__init__()
 
+        self.model_type = config.model_type
         self.encoder = pretrained_encoder
-        self.decoder = nn.Linear(config.d_model, config.vocab_size, bias=True)
-        self.activate = nn.Sigmoid()
+        if self.model_type == "bert":
+            self.hidden_size = config.hidden_size
+            self.embeddings = self.encoder.embeddings.word_embeddings
+        elif self.model_type == "xlnet":
+            self.hidden_size = config.d_model
+            self.embeddings = self.encoder.word_embedding
 
-        self.c_mem_encoder = Encoder(num_layers=1, model_dim=config.d_model, num_heads=8)
-        self.a_mem_encoder = Encoder(num_layers=1, model_dim=config.d_model, num_heads=8)
-        self.cgate_projector = nn.Linear(config.d_model * 2, 1, bias=True)
-        self.agate_projector = nn.Linear(config.d_model * 2, 1, bias=True)
+        self.decoder = nn.Linear(self.hidden_size, config.vocab_size, bias=True)
+        self.activate = nn.Sigmoid()
+        self.c_mem_encoder = Encoder(num_layers=1, model_dim=self.hidden_size, num_heads=8)
+        self.a_mem_encoder = Encoder(num_layers=1, model_dim=self.hidden_size, num_heads=8)
+        self.cgate_projector = nn.Linear(self.hidden_size * 2, 1, bias=True)
+        self.agate_projector = nn.Linear(self.hidden_size * 2, 1, bias=True)
 
         self.pad_i = pad_index
         self.msk_i = msk_index
@@ -26,7 +33,7 @@ class CHIME_Model(nn.Module):
         self.init_weights()
 
     def init_weights(self):
-        self.decoder.weight = self.encoder.word_embedding.weight
+        self.decoder.weight = self.embeddings.weight
         self.decoder.bias.data.zero_()
 
     def _get_padding_mask(self, seq, sen_1_leng):
@@ -117,7 +124,6 @@ class CHIME_Model(nn.Module):
         zvalue, attn = mem_encoder(query, kv_memory, kv_memory)  # (B, LQ, H), (B, LQ, LK)
         gate = gate_projector(torch.cat((zvalue, query), dim=2))  # (B, LQ, 2H) -> (B, LQ, 1)
         gate = self.activate(gate)
-
         return gate, attn
 
     def splithiddenstates(self, all_hid, c_mask, a_mask):
@@ -160,7 +166,10 @@ class CHIME_Model(nn.Module):
         for i in range(ans.size(1)):
             for j in range(rev.size(1)):
                 qra, trg, ans_mask, qAr_mask, seg_mask, a_mask = self.dynamic_padding(que, rev[:, j, :], ans[:, i, :])
-                hidden_states = self.encoder(input_ids=qra, token_type_ids=seg_mask, perm_mask=(1.0 - a_mask))
+                if self.model_type == "xlnet":
+                    hidden_states = self.encoder(input_ids=qra, token_type_ids=seg_mask, perm_mask=(1.0 - a_mask))
+                elif self.model_type == "bert":
+                    hidden_states = self.encoder(input_ids=qra, token_type_ids=seg_mask, attention_mask=a_mask)
                 last_hidden_states = hidden_states[0]
                 c_memory, a_memory, cgate = self.memoryupdater(c_memory, a_memory, qAr_mask,
                                                                ans_mask, last_hidden_states)

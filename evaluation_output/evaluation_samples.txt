@@ -1,0 +1,14 @@
+Question: does this device come with a 110v wall adapter?
+Predicted Answer: yes it does. i have mine plugged into a wall outlet and have had no problems with the power cord going through the usbb cord, but i would recommend buying one for your computer, or any usb device with power cords
+====================
+====================
+Question: can you put coals on the lid, like you can with some lodge models?
+Predicted Answer: yes, you can put coals on the lid, but i don't think you can put any coal in this one, as the lid is not designed for that type of use
+====================
+====================
+Question: will this tv mount rotate a 65 inch tv 90 degrees?
+Predicted Answer: yes it will. i have a 65" tv and have not had any problems with this mount, so far
+====================
+====================
+Question: could this lamp be attached to a glass desk top? i can't get a good look at the clamp.
+Predicted Answer: yes it can be attached to a desk top, but i don't see why you would want to use this lamp on a desk top
