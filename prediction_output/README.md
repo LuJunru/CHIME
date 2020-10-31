@@ -1,1 +1,3 @@
-This is a sample path of prediction output
+## This is a sample path of prediction output
+
+You can save prediction output here.

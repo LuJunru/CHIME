@@ -4,7 +4,7 @@ import torch
 
 class PositionalWiseFeedForward(nn.Module):
 
-    def __init__(self, model_dim, ffn_dim=2048, dropout=0.0):
+    def __init__(self, model_dim, ffn_dim=2048, dropout=0.1):
         super(PositionalWiseFeedForward, self).__init__()
         self.w1 = nn.Conv1d(model_dim, ffn_dim, 1)
         self.w2 = nn.Conv1d(ffn_dim, model_dim, 1)
@@ -23,7 +23,7 @@ class PositionalWiseFeedForward(nn.Module):
 
 class ScaledDotProductAttention(nn.Module):
     """Scaled dot-product attention mechanism."""
-    def __init__(self, attention_dropout=0.0):
+    def __init__(self, attention_dropout=0.1):
         super(ScaledDotProductAttention, self).__init__()
         self.dropout = nn.Dropout(attention_dropout)
         self.softmax = nn.Softmax(dim=2)
@@ -46,7 +46,7 @@ class ScaledDotProductAttention(nn.Module):
 
 class MultiHeadAttention(nn.Module):
 
-    def __init__(self, num_heads, model_dim, dropout=0.0):
+    def __init__(self, num_heads, model_dim, dropout=0.1):
         super(MultiHeadAttention, self).__init__()
 
         self.dim_per_head = model_dim // num_heads
@@ -103,7 +103,7 @@ class MultiHeadAttention(nn.Module):
 
 
 class EncoderLayer(nn.Module):
-    def __init__(self, model_dim, num_heads, ffn_dim=2048, dropout=0.0):
+    def __init__(self, model_dim, num_heads, ffn_dim=2048, dropout=0.1):
         super(EncoderLayer, self).__init__()
 
         self.attention = MultiHeadAttention(num_heads, model_dim, dropout)
@@ -121,7 +121,7 @@ class EncoderLayer(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, num_layers, model_dim, num_heads, ffn_dim=2048, dropout=0.0):
+    def __init__(self, num_layers, model_dim, num_heads, ffn_dim=2048, dropout=0.1):
         super(Encoder, self).__init__()
 
         self.encoder_layers = nn.ModuleList(

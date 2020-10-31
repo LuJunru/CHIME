@@ -4,9 +4,6 @@ parser = argparse.ArgumentParser()
 
 
 def setup_args():
-    """
-    设置训练参数
-    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--devices', default='0,1', type=str, required=False, help='GPUs for using, in sequence')
     parser.add_argument('--model', default='xlnet-base-cased', type=str, required=False, help='Pre-trained Encoder')
@@ -30,7 +27,7 @@ def setup_args():
     parser.add_argument('--question_length', default=40, type=int, required=False, help='fix length for questions')
     parser.add_argument('--single_review_length', default=124, type=int, required=False, help='fix length for reviews')
     parser.add_argument('--single_answer_length', default=82, type=int, required=False, help='fix length for answers')
-    parser.add_argument('--fp16', default="O1", type=str, required=False)
+    parser.add_argument('--fp16', default="O1", type=str, required=False, help='whether to use apex or not, and mode')
     parser.add_argument('--rev_num', default=10, type=int, required=False, help='the number of reviews to be used',
                         choices=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
     parser.add_argument('--ans_num', default=1, type=int, required=False, help='the number of answers to be used',

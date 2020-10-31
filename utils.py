@@ -3,8 +3,6 @@ import random
 import numpy as np
 import os
 from config import configs
-from nltk.translate.bleu_score import SmoothingFunction
-cc = SmoothingFunction()
 device = configs['device']
 devices = configs['devices']
 rev_num = configs['rev_num']

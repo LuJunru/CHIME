@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 def evaluate(eval_model, data_source, eval_batch_size):
-    eval_model.eval()  # Turn on the evaluation mode
+    # Turn on the evaluation mode
+    eval_model.eval()
     total_loss = 0.
     with torch.no_grad():
         for i, batch in enumerate(get_batch(data_source, eval_batch_size)):
@@ -69,7 +70,7 @@ def predict(load_model, batch_data, single_answer_length, sep_idx, beam_size):
                                 pass
                 if len(candidates) == 0:
                     break
-                top_beams = sorted(candidates.items(), key=lambda x: -x[1][1])[:beam_size]  # beam_score排序候选答案
+                top_beams = sorted(candidates.items(), key=lambda x: -x[1][1])[:beam_size]  # beam_score sorting
                 for top_beam_i, top_beam in enumerate(top_beams):
                     top_candidates[top_beam_i] = top_beam[1]
             outputs.append(top_candidates[0][0])

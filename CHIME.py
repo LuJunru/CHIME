@@ -82,7 +82,7 @@ class CHIME_Model(nn.Module):
         :param r: (N, SR)
         :param a: (N, TA)
         :return: model inputs [CLS Q CLS R SEP A SEP PAD*], targets [CLS Q CLS R A SEP PAD* PAD],
-                 segment id mask [0 1 0 1], ans mask [0 0 1 0] and attention mask
+                 segment id mask [0 1 0 1], ans mask [0 0 1 0] and 3D attention mask
         """
         bsz = q.size(0)
         qra = torch.ones((bsz, 1 + q.size(1) + 1 + r.size(1) + 1 + a.size(1) + 1)).to(q.device) * self.pad_i
