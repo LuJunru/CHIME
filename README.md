@@ -37,4 +37,11 @@ python3 run_chime.py --devices 0,1 --model xlnet-base-cased --root_path YourData
 MIT
 
 ## Citation
-TBD
+```
+@inproceedings{chime2020,
+    author = {Lu, Junru and Pergola, Gabriele and Gui, Lin and Li, Binyang and He, Yulan},
+    title = {Chime: Cross-passage Hierarchical Memory Network for Generative Review Question Answering},
+    booktitle = {The 28th International Conference on Computational Linguistics},
+    year = {2020}
+}
+```
