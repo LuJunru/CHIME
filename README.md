@@ -1,5 +1,5 @@
 # CHIME: Cross-passage Hierarchical Memory Network for Generative Review Question Answering
-This repository contains PyTorch implementation of the [corresponding COLING 2020 Paper](https://waitforadding.com).
+This repository contains PyTorch implementation of the [corresponding COLING 2020 Paper](https://arxiv.org/abs/2011.00519).
 
 ## Breif Introduction
 CHIME is a cross-passage hierarchical memory network for generative question answering (QA). It extends
